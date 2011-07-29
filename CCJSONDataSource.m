@@ -68,7 +68,7 @@
 
 
 - (NSString *)stringFromURLString:(NSString *)theString andDictionaryKey:(NSString *)theKey; {
-	return [self stringFromURLString:[NSURL URLWithString:theString] andDictionaryKey:theKey];
+	return [self stringFromURL:[NSURL URLWithString:theString] andDictionaryKey:theKey];
 }
 
 
