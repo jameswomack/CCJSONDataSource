@@ -1,1 +1,1 @@
-CCJSONDataSource is an iOS singleton object intended to be subclassed in application that use HTTP JSON as their data source
+CCJSONDataSource is an iOS singleton object intended to be subclassed in iOS applications that use HTTP JSON as their data source
