@@ -10,25 +10,22 @@
 #import "CCJSONDataSource.h"
 #import "JSONKit.h"
 #import "Stopwatch.h"
+#import "Reachability.h"
 
 
 @implementation CCJSONDataSource
 
 
 + (BOOL)isSiteReachable:(const char*)host_name; {
-	static BOOL checkNetwork = YES;
-    static BOOL _isDataSourceAvailable = NO;
-	if (checkNetwork) {
-        checkNetwork = NO;
-        
-        Boolean success;    
-		
-        SCNetworkReachabilityRef reachability = SCNetworkReachabilityCreateWithName(NULL, host_name);
-		SCNetworkReachabilityFlags flags;
-        success = SCNetworkReachabilityGetFlags(reachability, &flags);
-        _isDataSourceAvailable = success && (flags & kSCNetworkFlagsReachable) && !(flags & kSCNetworkFlagsConnectionRequired);
-		CFRelease(reachability); 
-    }
+	BOOL _isDataSourceAvailable;
+	Boolean success;    
+	
+	SCNetworkReachabilityRef reachability = SCNetworkReachabilityCreateWithName(NULL, host_name);
+	SCNetworkReachabilityFlags flags;
+	success = SCNetworkReachabilityGetFlags(reachability, &flags);
+	_isDataSourceAvailable = success && (flags & kSCNetworkFlagsReachable) && !(flags & kSCNetworkFlagsConnectionRequired);
+	CFRelease(reachability); 
+
     return _isDataSourceAvailable;
 }
 
@@ -179,7 +176,7 @@
 	if (dictionary && [[dictionary allKeys] count]) {
 		return [dictionary autorelease];
 	}else {
-		ILogPlus(@"Error: %@",[dictionary autorelease]);
+		NSLog(@"Error: %@",[dictionary autorelease]);
 		return nil;
 	}
 	return nil;
