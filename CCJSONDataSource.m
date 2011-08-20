@@ -13,6 +13,19 @@
 #import "Reachability.h"
 
 
+#ifndef __has_feature
+    #define __has_feature(x) 0
+#endif
+
+#ifdef __OBJC_GC__
+    #error CCJSONDataSource does not support Objective-C Garbage Collection
+#endif
+
+#if __has_feature(objc_arc)
+    #error CCJSONDataSource does not support Objective-C Automatic Reference Counting (ARC)
+#endif
+
+
 @implementation CCJSONDataSource
 
 
