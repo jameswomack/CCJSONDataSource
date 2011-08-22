@@ -6,7 +6,7 @@
 //
 
 #import <Foundation/Foundation.h>
-
+#import "JSONKit.h"
 
 @interface CCJSONDataSource : NSObject {
     
