@@ -47,7 +47,7 @@
 	if (theData) {
 		return [self jsonObjectWithData:theData];
 	}else {
-		ILogPlus(@"%@",error);
+		ALog(@"%@",error);
 	}
 	return nil;
 }
@@ -91,7 +91,7 @@
 			anObject = [decoder objectWithUTF8String:(const unsigned char *)[theData bytes] length:[theData length]];
 		}
 		@catch (NSException * e) {
-			ILogPlus(@"Exception: %@", e);
+			ALog(@"Exception: %@", e);
 		}
 		
 		if( !error2) {
@@ -100,8 +100,8 @@
 			return anObject;
 		} else {
 			[decoder release];
-			ILogPlus(@"Error parsing search results: %@", error2);
-			ILogPlus(@"Data: %@", theData);
+			ALog(@"Error parsing search results: %@", error2);
+			ALog(@"Data: %@", theData);
             
             
 			return nil;
@@ -122,7 +122,7 @@
 			anObject = [theJSONString objectFromJSONString];
 		}
 		@catch (NSException * e) {
-			ILogPlus(@"Exception: %@", e);
+			ALog(@"Exception: %@", e);
 		}
 		
 		if( !error2) {
@@ -130,8 +130,8 @@
             
 			return anObject;
 		} else {
-			ILogPlus(@"Error parsing search results: %@", error2);
-			ILogPlus(@"Data: %@", theJSONString);
+			ALog(@"Error parsing search results: %@", error2);
+			ALog(@"Data: %@", theJSONString);
             
             
 			return nil;
@@ -145,7 +145,7 @@
 	array = [self jsonObjectWithUrl:theURL];
 	if (array && [array count]) {
 		if ([array count] > 0) {
-			//ILogPlus(@"%@",array);
+			//ALog(@"%@",array);
 			return array;
 		}else {
 			return nil;
@@ -161,7 +161,7 @@
 		if ([[dictionary objectForKey:theKey] count] > 0) {
 			return [dictionary objectForKey:theKey];
 		}else {
-			ILogPlus(@"%@",dictionary);
+			ALog(@"That dictionary key is not an array or doesn't have any content: %@",dictionary);
 			return nil;
 		}
 	}
@@ -175,7 +175,7 @@
 		if ([[dictionary objectForKey:theKey] count] > 0) {
 			return [dictionary objectForKey:theKey];
 		}else {
-			ILogPlus(@"%@",dictionary);
+			ALog(@"%@",dictionary);
 			return nil;
 		}
 	}
