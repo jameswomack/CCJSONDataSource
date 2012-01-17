@@ -5,11 +5,14 @@
 //  Copyright 2011 Cirrostratus Co. All rights reserved.
 //
 
+#import "CCJSONDataSource.h"
+
 #import <sys/utsname.h>
 #import <SystemConfiguration/SystemConfiguration.h>
-#import "CCJSONDataSource.h"
-#import "Stopwatch.h"
+#import "JSONKit.h"
 #import "Reachability.h"
+#import "NSString+CCAdditions.h"
+#import "NSObject+Debugging.h"
 
 
 #ifndef __has_feature
@@ -28,7 +31,8 @@
 @implementation CCJSONDataSource
 
 
-+ (BOOL)isSiteReachable:(const char*)host_name; {
++ (BOOL)isSiteReachable:(const char*)host_name; 
+{
 	BOOL _isDataSourceAvailable;
 	Boolean success;    
 	
@@ -41,170 +45,161 @@
     return _isDataSourceAvailable;
 }
 
-- (id)jsonObjectWithUrl:(NSURL *)url; {
-    NSError *error = nil;
-    NSData *theData = [NSData dataWithContentsOfURL:url options:NSDataReadingUncached error:&error];
-	if (theData) {
-		return [self jsonObjectWithData:theData];
-	}else {
-		ALog(@"%@",error);
-	}
-	return nil;
-}
-
-
-- (id)jsonObjectWithUrlString:(NSString *)theUrlString; {
+- (id)jsonObjectWithUrlString:(NSString *)theUrlString; 
+{
+    NSParameterAssert(ValidString(theUrlString));
 	return [self jsonObjectWithUrl:[NSURL URLWithString:theUrlString]];
 }
 
-
-- (NSArray *)arrayFromURLString:(NSString *)theString andDictionaryKey:(NSString *)theKey; {
-	return [self arrayFromURL:[NSURL URLWithString:theString] andDictionaryKey:theKey];
-}
-
-- (NSArray *)arrayFromURLString:(NSString *)theString; {
-	return [self arrayFromURL:[NSURL URLWithString:theString]];
-}
-
-
-- (NSDictionary *)dictionaryFromURLString:(NSString *)theString andDictionaryKey:(NSString *)theKey; {
-	return [self dictionaryFromURL:[NSURL URLWithString:theString] andDictionaryKey:theKey];
-}
-
-- (NSDictionary *)dictionaryFromURLString:(NSString *)theString; {
-	return [self dictionaryFromURL:[NSURL URLWithString:theString]];
-}
-
-
-- (NSString *)stringFromURLString:(NSString *)theString andDictionaryKey:(NSString *)theKey; {
-	return [self stringFromURL:[NSURL URLWithString:theString] andDictionaryKey:theKey];
-}
-
-
-- (id)jsonObjectWithData:(NSData *)theData; {
+- (id)jsonObjectWithUrl:(NSURL *)url; 
+{	
+    NSParameterAssert(ValidURL(url));
+	NSMutableURLRequest *request = [[[NSMutableURLRequest alloc] init] autorelease];
+    [request setTimeoutInterval:20];
+	[request setURL:url];
+	[request setHTTPMethod:@"GET"];
+	
+	NSError *error = nil;
+	
+	NSData *returnData2 = [ NSURLConnection sendSynchronousRequest: request returningResponse: nil error: &error ];	
     
-    JSONDecoder *decoder = [[JSONDecoder allocWithZone:NULL] init];
-    if ([theData length]) {
-		NSError *error2 = nil;
-		id anObject = nil;
-		@try {
-			anObject = [decoder objectWithUTF8String:(const unsigned char *)[theData bytes] length:[theData length]];
-		}
-		@catch (NSException * e) {
-			ALog(@"Exception: %@", e);
-		}
-		
-		if( !error2) {
-            
-            [decoder release];
-			return anObject;
-		} else {
-			[decoder release];
-			ALog(@"Error parsing search results: %@", error2);
-			ALog(@"Data: %@", theData);
-            
-            
-			return nil;
-		}
-	}
-    
-    [decoder release];
+	if (returnData2)
+		return [self jsonObjectWithData:returnData2];
+	else if (error)
+        ALog(@"%@",error);
+	
 	return nil;
 }
+
+- (id)jsonObjectWithData:(NSData *)theData; 
+{
+    NSParameterAssert(ValidObj(theData));
+    if ([theData length]) 
+    {
+        JSONDecoder *decoder = [JSONDecoder decoder];
+		NSError *error2 = nil;
+		id anObject = nil;
+        
+        anObject = [decoder 
+                    objectWithUTF8String:(const unsigned char *)[theData bytes] 
+                    length:[theData length]];
+		
+		if(!error2) 
+			return anObject;
+		else
+        {
+            ALog(@"Error parsing search results: %@", error2);
+            ALog(@"Data: %@", theData); 
+        }        
+	}
+	return nil;
+}
+
 
 
 - (id)jsonObjectWithJSONString:(NSString *)theJSONString {
-    
-	if (theJSONString) {
+    NSParameterAssert(ValidString(theJSONString));
+	if (theJSONString) 
+    {
 		NSError *error2 = nil;
 		id anObject = nil;
-		@try {
-			anObject = [theJSONString objectFromJSONString];
-		}
-		@catch (NSException * e) {
-			ALog(@"Exception: %@", e);
-		}
+        
+        anObject = [theJSONString 
+                    objectFromJSONStringWithParseOptions:JKParseOptionLooseUnicode 
+                    error:&error2];
 		
-		if( !error2) {
-            
-            
+		if( !error2)        
 			return anObject;
-		} else {
-			ALog(@"Error parsing search results: %@", error2);
-			ALog(@"Data: %@", theJSONString);
-            
-            
-			return nil;
-		}
+        
+        ALog(@"Error parsing search results: %@", error2);
+        ALog(@"Data: %@", theJSONString);
 	}
 	return nil;
 }
 
-- (NSArray *)arrayFromURL:(NSURL *)theURL; {
-	NSArray *array = nil;
-	array = [self jsonObjectWithUrl:theURL];
-	if (array && [array count]) {
-		if ([array count] > 0) {
-			//ALog(@"%@",array);
-			return array;
-		}else {
-			return nil;
-		}
-	}
+- (NSArray *)arrayFromURLString:(NSString *)theString andDictionaryKey:(NSString *)theKey; 
+{
+    NSParameterAssert(ValidString(theString) && ValidString(theKey));
+	return [self arrayFromURL:[NSURL URLWithString:theString] andDictionaryKey:theKey];
+}
+
+- (NSArray *)arrayFromURLString:(NSString *)theString; 
+{
+    NSParameterAssert(ValidString(theString));
+	return [self arrayFromURL:[NSURL URLWithString:theString]];
+}
+
+- (NSArray *)arrayFromURL:(NSURL *)theURL; 
+{
+    NSParameterAssert(ValidURL(theURL));
+	NSArray *array = [self jsonObjectWithUrl:theURL];
+    
+	if (ValidArray(array))
+        return array;
+    
 	return nil;
 }
 
-- (NSArray *)arrayFromURL:(NSURL *)theURL andDictionaryKey:(NSString *)theKey; {
-	NSDictionary *dictionary = nil;
-	dictionary = [self jsonObjectWithUrl:theURL];
-	if (dictionary && [[dictionary allKeys] count]) {
-		if ([[dictionary objectForKey:theKey] count] > 0) {
+- (NSArray *)arrayFromURL:(NSURL *)theURL andDictionaryKey:(NSString *)theKey; 
+{
+    NSParameterAssert(ValidURL(theURL) && ValidString(theKey));
+	NSDictionary *dictionary = [self jsonObjectWithUrl:theURL];
+	if (dictionary && [[dictionary allKeys] count]) 
+    {
+		if (ValidArray([dictionary objectForKey:theKey]))
 			return [dictionary objectForKey:theKey];
-		}else {
-			ALog(@"That dictionary key is not an array or doesn't have any content: %@",dictionary);
-			return nil;
-		}
+		else
+			ALog(@"Dictionary key is not array or is empty: %@",dictionary);
 	}
 	return nil;
 }
 
-- (NSDictionary *)dictionaryFromURL:(NSURL *)theURL andDictionaryKey:(NSString *)theKey; {
-	NSDictionary *dictionary = nil;
-	dictionary = [self jsonObjectWithUrl:theURL];
-	if (dictionary && [[dictionary allKeys] count]) {
-		if ([[dictionary objectForKey:theKey] count] > 0) {
-			return [dictionary objectForKey:theKey];
-		}else {
-			ALog(@"%@",dictionary);
-			return nil;
-		}
-	}
+- (NSDictionary *)dictionaryFromURL:(NSURL *)theURL andDictionaryKey:(NSString *)theKey; 
+{
+    NSParameterAssert(ValidURL(theURL) && ValidString(theKey));
+	NSDictionary *dictionary = [self dictionaryFromURL:theURL];
+    if (dictionary)
+        return [dictionary objectForKey:theKey];
 	return nil;
 }
 
-- (NSDictionary *)dictionaryFromURL:(NSURL *)theURL; {
-	NSDictionary *dictionary = nil;
-	dictionary = [[self jsonObjectWithUrl:theURL] copy];
-	if (dictionary && [[dictionary allKeys] count]) {
-		return [dictionary autorelease];
-	}else {
-		NSLog(@"Error: %@",[dictionary autorelease]);
-		return nil;
-	}
+- (NSDictionary *)dictionaryFromURL:(NSURL *)theURL; 
+{
+    NSParameterAssert(ValidURL(theURL));
+	NSDictionary *dictionary = [self jsonObjectWithUrl:theURL];
+	if (ValidDict(dictionary))
+		return dictionary;
+	else
+		NSLog(@"Error: %@",dictionary);
 	return nil;
 }
 
-- (NSString *)stringFromURL:(NSURL *)theURL andDictionaryKey:(NSString *)theKey; {
-	NSDictionary *dictionary = nil;
-	dictionary = [self jsonObjectWithUrl:theURL];
-	if (dictionary && [[dictionary allKeys] count]) {
-		if ([dictionary objectForKey:theKey]) {
-			return [dictionary objectForKey:theKey];
-		}else {
-			return nil;
-		}
-	}
+- (NSDictionary *)dictionaryFromURLString:(NSString *)theString andDictionaryKey:(NSString *)theKey; 
+{
+    NSParameterAssert(ValidString(theString) && ValidString(theKey));
+	return [self dictionaryFromURL:[NSURL URLWithString:theString] andDictionaryKey:theKey];
+}
+
+- (NSDictionary *)dictionaryFromURLString:(NSString *)theString; 
+{
+    NSParameterAssert(ValidString(theString));
+	return [self dictionaryFromURL:[NSURL URLWithString:theString]];
+}
+
+- (NSString *)stringFromURL:(NSURL *)theURL andDictionaryKey:(NSString *)theKey; 
+{
+    NSParameterAssert(ValidURL(theURL) && ValidString(theKey));
+	NSDictionary *dictionary = [self dictionaryFromURL:theURL];
+    if (KeyIsValidForClass(dictionary,theKey,[NSString class]))
+        return [dictionary objectForKey:theKey];
 	return nil;
+}
+
+
+- (NSString *)stringFromURLString:(NSString *)theString andDictionaryKey:(NSString *)theKey; 
+{
+    NSParameterAssert(ValidString(theString) && ValidString(theKey));
+	return [self stringFromURL:[NSURL URLWithString:theString] andDictionaryKey:theKey];
 }
 
 @end
