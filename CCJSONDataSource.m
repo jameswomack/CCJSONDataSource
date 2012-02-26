@@ -66,7 +66,7 @@
 	if (returnData2)
 		return [self jsonObjectWithData:returnData2];
 	else if (error)
-        ALog(@"%@",error);
+        NSLog(@"%@",error);
 	
 	return nil;
 }
@@ -88,8 +88,8 @@
 			return anObject;
 		else
         {
-            ALog(@"Error parsing search results: %@", error2);
-            ALog(@"Data: %@", theData); 
+            NSLog(@"Error parsing search results: %@", error2);
+            NSLog(@"Data: %@", theData); 
         }        
 	}
 	return nil;
@@ -97,8 +97,14 @@
 
 
 
-- (id)jsonObjectWithJSONString:(NSString *)theJSONString {
-    NSParameterAssert(ValidString(theJSONString));
+- (id)jsonObjectWithJSONString:(NSString *)theJSONString 
+{
+    BOOL isValid = ValidString(theJSONString);
+    if (!isValid) 
+    {
+        
+        NSLog(@"Non-string passed: %@ : %@", theJSONString,  [theJSONString class]);
+    }
 	if (theJSONString) 
     {
 		NSError *error2 = nil;
@@ -111,8 +117,8 @@
 		if( !error2)        
 			return anObject;
         
-        ALog(@"Error parsing search results: %@", error2);
-        ALog(@"Data: %@", theJSONString);
+        NSLog(@"Error parsing search results: %@", error2);
+        NSLog(@"Data: %@", theJSONString);
 	}
 	return nil;
 }
@@ -149,7 +155,7 @@
 		if (ValidArray([dictionary objectForKey:theKey]))
 			return [dictionary objectForKey:theKey];
 		else
-			ALog(@"Dictionary key is not array or is empty: %@",dictionary);
+			NSLog(@"Dictionary key is not array or is empty: %@",dictionary);
 	}
 	return nil;
 }
