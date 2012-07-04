@@ -6,6 +6,10 @@
 
 #import "NSString+CCAdditions.h"
 
+#ifndef String
+#define String(fmt,...) [NSString stringWithFormat:fmt,__VA_ARGS__]
+#endif
+
 @implementation NSString (CCAdditions)
 - (BOOL)notNilOrNull; {
 	return (self && ![self isEqual:[NSNull null]] && ![self isEqualToString:@"<null>"]);
