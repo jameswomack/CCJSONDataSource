@@ -1,6 +1,5 @@
 //
 //  NSObject+Debugging.h
-//  DoubleStamp
 //
 //  Created by James Womack on 1/1/12.
 //  Copyright (c) 2012 Cirrostratus Design Company. All rights reserved.

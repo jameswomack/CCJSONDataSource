@@ -1,6 +1,5 @@
 //
 //  NSObject+Debugging.m
-//  DoubleStamp
 //
 //  Created by James Womack on 1/1/12.
 //  Copyright (c) 2012 Cirrostratus Design Company. All rights reserved.
@@ -9,6 +8,10 @@
 #import "NSObject+Debugging.h"
 #import <objc/runtime.h> 
 #import <objc/message.h>
+
+#ifndef String
+#define String(fmt,...) [NSString stringWithFormat:fmt,__VA_ARGS__]
+#endif
 
 @implementation NSObject (Debugging)
 
