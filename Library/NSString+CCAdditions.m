@@ -5,7 +5,6 @@
 //
 
 #import "NSString+CCAdditions.h"
-#import "CCMacros.h"
 
 @implementation NSString (CCAdditions)
 - (BOOL)notNilOrNull; {
