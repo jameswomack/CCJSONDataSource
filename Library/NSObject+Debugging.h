@@ -21,7 +21,9 @@ ALog(@"Exception: %@", e);\
 
 #define ValidImg(img) (ValidObj(img) && [img isKindOfClass:[UIImage class]]) 
 
-#define ValidDict(dictionary) (ValidObj(dictionary) && [dictionary isKindOfClass:[NSDictionary class]] && [[dictionary allKeys] count])
+#define ValidDict(dictionary) (ValidObj(dictionary) && [dictionary isKindOfClass:[NSDictionary class]])
+
+#define ValidData(data) (ValidObj(data) && [data isKindOfClass:[NSData class]] && data.length)
 
 #define ValidArray(array) (ValidObj(array) && [array isKindOfClass:[NSArray class]])
 
@@ -38,5 +40,6 @@ ALog(@"Exception: %@", e);\
 - (void)performSelectorIfDebugging:(SEL)aSelector;
 - (void)performSelectorIfDebugging:(SEL)aSelector withObject:(id)arg;
 - (void)performSelectorSafely:(SEL)aSelector withObject:(id)arg;
+void Swizzle(Class c, Class c2, SEL orig, SEL new);
 
 @end
